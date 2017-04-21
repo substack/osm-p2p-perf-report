@@ -10,7 +10,7 @@ export changeset=$(echo '<osm><changeset></changeset></osm>' \
       s/ref="(.*?)"/q[ref="].$ids{$1}.q["]/e' \
     | grep -vE '^\s*</?(osm|bounds|\?xml)' \
     | grep -v 'ref=""'
-    echo '</create></osmChange>') \
-  | time curl -sSNT- -X POST -H 'content-type: text/xml' \
+    echo '</create></osmChange>') > /tmp/changeset.xml
+  time curl -m 9999 -sSNT /tmp/changeset.xml -X POST -H 'content-type: text/xml' \
     http://localhost:54321/api/0.6/changeset/$changeset/upload \
     > /dev/null
