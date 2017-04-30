@@ -1,5 +1,7 @@
 # benchmark procedure
 
+For monitoring the elapsed time, CPU, and memory:
+
 ``` sh
 $ rm -rf /tmp/osm-p2p-perf-test
 $ osm-p2p-server -p 54321 -d /tmp/osm-p2p-perf-test
@@ -13,6 +15,13 @@ while true; do
   ps aux|grep osm-p2p-server|head -n1|awk '{print $3,$5,$6}'
   sleep 1
 done | tee monitor.txt
+```
+
+For profiling osm-p2p-server itself:
+
+``` sh
+$ rm -rf /tmp/osm-p2p-perf-test
+$ node --prof `which osm-p2p-server` -p 54321 -d /tmp/osm-p2p-perf-test
 ```
 
 generate a changeset from peermaps and upload it to osm-p2p-server:
@@ -43,9 +52,19 @@ $ ls -sh /tmp/changeset.xml
 18M /tmp/changeset.xml
 ```
 
+Turn the isolate file into a processed report:
+
+```
+$ node --prof-process isolate-*.log > results/profile.txt
+```
+
 # results
 
-## current
+The first set of results concerns the elapsed time, memory, and CPU used.
+
+The second set
+
+## current time/mem/cpu
 
 For this test, osm-p2p-db with all the current settings was used.
 
@@ -69,7 +88,7 @@ CPU usage remains high as the indexes catch up. The CPU slowly declined from
 over 100% but remained high. When the monitoring was stopped the process was
 still taking 77% of a CPU. Presumably the indexes were still catching up.
 
-## memdb
+## memdb time/mem/cpu
 
 For this test, the leveldb instances were swapped with memdb.
 
@@ -99,7 +118,7 @@ Surprisingly, using memdb takes about the same amount of time. The CPU stays
 lower than the unmodified version but memory usage is higher and stays high, as
 expected.
 
-## memory-chunk-store
+## memory-chunk-store time/mem/cpu
 
 For this test, the fdstore was swapped with an in-memory replacement,
 memory-chunk-store. The leveldb configuration is the same as the current stock
@@ -128,4 +147,49 @@ sys 0m2.376s
 
 Also surprisingly, the time is about the same as using fd-chunk-store and the
 CPU usage remains high afterward.
+
+# current profile
+
+The profiler added some amount of overhead compared to running without:
+
+```
+$ scripts/perf.sh 
+
+real  3m11.562s
+user  0m1.292s
+sys 0m2.956s
+```
+
+```
+$ node --prof-process isolate-*.log > results/current-profile.txt
+```
+
+The most time is spent in sax, an xml parser:
+
+```
+   3679    2.1%    2.2%  LazyCompile: *write /home/substack/projects/osm-p2p-server/node_modules/sax/lib/sax.js:981:18
+```
+
+sax is getting called from the osm2json package from
+`osm-p2p-server/routes/changeset_upload.js`. That file also buffers the entire
+changeset into memory in order to do a batch insert.
+
+# xml parsing
+
+```
+$ time node parse/sax.js  < changeset.xml 
+
+real  0m25.062s
+user  0m25.020s
+sys 0m0.180s
+```
+
+```
+$ time node parse/htmlparser2.js  < changeset.xml 
+
+real  0m6.897s
+user  0m6.876s
+sys 0m0.064s
+```
+
 
