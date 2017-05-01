@@ -192,4 +192,20 @@ user  0m6.876s
 sys 0m0.064s
 ```
 
+---
+
+peermaps data -155.5 19.53 -149.5 19.60
+
+```
+$ rm -rf /tmp/osm-p2p-perf-test && node --inspect bin/cmd.js --port=54321 -d /tmp/osm-p2p-perf-test
+Debugger listening on port 9229.
+Warning: This is an experimental feature and could change at any time.
+To start debugging, open the following URL in Chrome:
+    chrome-devtools://devtools/remote/serve_file/@521e5b7e2b7cc66b4006a8a54cb9c4e57494a5ef/inspector.html?experiments=true&v8only=true&ws=localhost:9229/node
+http://127.0.0.1:54321
+database location: /tmp/osm-p2p-perf-test
+Debugger attached.
+```
+
+---
 
