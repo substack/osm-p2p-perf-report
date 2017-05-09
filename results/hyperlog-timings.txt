@@ -1,0 +1,16 @@
+osmbatch: 22.363ms
+1. construct nodes: 459.468ms
+2. emitPreAdd: 25.562ms
+3. lockAndGetSeqNumber: 4.769ms
+4. hashNodesAndFindLinks: 1198.331ms
+5. dedupeNodes: 3523.321ms
+6a. Sign: 0ms
+6b. Verify: 0ms
+6c. Dag: 11595ms
+6d. encoder: 1024ms
+6e. batch push: 1973ms
+6. computeBatchNodeOperations: 207308.793ms
+7. levelDbBatch: 2662.982ms
+8. emit add/reject: 4.194ms
+9. unlock: 17.873ms
+logBatch: 215210.964ms

@@ -48,7 +48,7 @@ export changeset=$(echo '<osm><changeset></changeset></osm>' \
 The changeset file is 18M:
 
 ```
-$ ls -sh /tmp/changeset.xml 
+$ ls -sh /tmp/changeset.xml
 18M /tmp/changeset.xml
 ```
 
@@ -76,7 +76,7 @@ var osm = osmdb(argv.datadir)
 ```
 
 ```
-$ scripts/perf.sh 
+$ scripts/perf.sh
 
 real  2m50.673s
 user  0m1.140s
@@ -107,7 +107,7 @@ var osm = osmdb({
 ```
 
 ```
-$ scripts/perf.sh 
+$ scripts/perf.sh
 
 real  2m48.194s
 user  0m1.100s
@@ -138,7 +138,7 @@ var osm = osmdb({
 ```
 
 ```
-$ scripts/perf.sh 
+$ scripts/perf.sh
 
 real  2m48.109s
 user  0m1.236s
@@ -153,7 +153,7 @@ CPU usage remains high afterward.
 The profiler added some amount of overhead compared to running without:
 
 ```
-$ scripts/perf.sh 
+$ scripts/perf.sh
 
 real  3m11.562s
 user  0m1.292s
@@ -177,7 +177,7 @@ changeset into memory in order to do a batch insert.
 # xml parsing
 
 ```
-$ time node parse/sax.js  < changeset.xml 
+$ time node parse/sax.js  < changeset.xml
 
 real  0m25.062s
 user  0m25.020s
@@ -185,7 +185,7 @@ sys 0m0.180s
 ```
 
 ```
-$ time node parse/htmlparser2.js  < changeset.xml 
+$ time node parse/htmlparser2.js  < changeset.xml
 
 real  0m6.897s
 user  0m6.876s
@@ -209,3 +209,26 @@ Debugger attached.
 
 ---
 
+# Hyperlog
+
+This timings are from the different steps in a hyperlog batch operation:
+
+```
+1. construct nodes: 459.468ms
+2. emitPreAdd: 25.562ms
+3. lockAndGetSeqNumber: 4.769ms
+4. hashNodesAndFindLinks: 1198.331ms
+5. dedupeNodes: 3523.321ms
+6. computeBatchNodeOperations: 207308.793ms
+  6a. Sign: 0ms
+  6b. Verify: 0ms
+  6c. dag.get: 11595ms
+  6d. encoder: 1024ms
+  6e. batch push: 1973ms
+7. levelDbBatch: 2662.982ms
+8. emit add/reject: 4.194ms
+9. unlock: 17.873ms
+
+hyperlog.batch total: 215210.964ms
+
+The timings are in [`hyperlog-perf-timings.js`](./hyperlog-perf-timings.js) which is the code from hyperlog v4.10.0. Most of the time is spent in `computeBatchNodeOperations`.
